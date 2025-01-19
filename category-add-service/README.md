@@ -33,14 +33,27 @@ Follow these steps to run the API on your local machine:
     > go mod download
     > go build
     ```
- **Run the Application**
 
-3. After configuring your environment variables, run the application:
+3. **Configure the Environment Variables**
+
+   Create a `.env` file in the root of the project and add the following environment variables, replacing with your database credentials:
+
+    ```bash
+    DATASOURCE_URL=localhost
+    DATASOURCE_PORT=3306
+    DATABASE=your_database_name
+    DATASOURCE_USERNAME=your_database_user
+    DATASOURCE_PASSWORD=your_database_password
+    ```
+    
+ 4. **Run the Application**
+
+    After configuring your environment variables, run the application:
 
     ```bash
     > go run main.go
-    ```
-4. **Sending POST Requests**
+     ```    
+5. **Sending POST Requests**
 To create a new category, send a POST request with JSON data to the following endpoint: [http://localhost:8080/categories](http://localhost:8080/categories)
 
     **Request Body Example:**
