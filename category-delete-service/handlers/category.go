@@ -1,14 +1,15 @@
 package handlers
 
 import (
-	"encoding/json"
-	"net/http"
 	"category-delete-service/database"
 	"category-delete-service/models"
-	"github.com/gorilla/mux"
+	"encoding/json"
+	"net/http"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/gorilla/mux"
 )
 
 func DeleteCategory(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +38,7 @@ func DeleteCategory(w http.ResponseWriter, r *http.Request) {
 
 func publishToSNS(categoryID string) error {
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("us-east-1"), 
+		Region: aws.String("us-east-1"),
 	})
 	if err != nil {
 		return err
@@ -55,7 +56,7 @@ func publishToSNS(categoryID string) error {
 
 	_, err = svc.Publish(&sns.PublishInput{
 		Message:  aws.String(string(messageBytes)),
-		TopicArn: aws.String("arn:aws:lambda:us-east-1:498431141888:function:delete_product_by_category"), 
+		TopicArn: aws.String("arn:aws:sns:us-east-1:498431141888:categoryDelete"),
 	})
 	if err != nil {
 		return err
