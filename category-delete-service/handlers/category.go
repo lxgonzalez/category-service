@@ -4,6 +4,7 @@ import (
 	"category-delete-service/database"
 	"category-delete-service/models"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -28,7 +29,8 @@ func DeleteCategory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := publishToSNS(id); err != nil {
-		http.Error(w, "Failed to publish message to SNS", http.StatusInternalServerError)
+		log.Println("Error al publicar en SNS:", err)
+		http.Error(w, "Failed to publish message to SNS: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -41,6 +43,7 @@ func publishToSNS(categoryID string) error {
 		Region: aws.String("us-east-1"),
 	})
 	if err != nil {
+		log.Println("Error al crear la sesión de AWS:", err)
 		return err
 	}
 
@@ -51,16 +54,19 @@ func publishToSNS(categoryID string) error {
 	}
 	messageBytes, err := json.Marshal(message)
 	if err != nil {
+		log.Println("Error al serializar el mensaje:", err)
 		return err
 	}
 
-	_, err = svc.Publish(&sns.PublishInput{
+	result, err := svc.Publish(&sns.PublishInput{
 		Message:  aws.String(string(messageBytes)),
 		TopicArn: aws.String("arn:aws:sns:us-east-1:498431141888:categoryDelete"),
 	})
 	if err != nil {
+		log.Println("Error al publicar en SNS:", err)
 		return err
 	}
 
+	log.Println("Mensaje publicado en SNS:", *result.MessageId)
 	return nil
 }
