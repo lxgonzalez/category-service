@@ -22,9 +22,24 @@ func notifyBroker(categoryID string) {
 	}
 	defer conn.Close()
 
-	message := fmt.Sprintf(`{"event": "delete_category", "category_id": "%s"}`, categoryID)
-	fmt.Println("Sending message to broker:", message)
-	conn.WriteMessage(websocket.TextMessage, []byte(message))
+	message := map[string]interface{}{
+		"event":       "delete_category",
+		"topic":       "categories_products",
+		"category_id": categoryID,
+	}
+
+	messageJSON, err := json.Marshal(message)
+	if err != nil {
+		fmt.Println("Error encoding message to JSON:", err)
+		return
+	}
+
+	fmt.Println("Sending message to broker:", string(messageJSON))
+
+	if err := conn.WriteMessage(websocket.TextMessage, messageJSON); err != nil {
+		fmt.Println("Error sending message to broker:", err)
+		return
+	}
 }
 
 func DeleteCategory(w http.ResponseWriter, r *http.Request) {

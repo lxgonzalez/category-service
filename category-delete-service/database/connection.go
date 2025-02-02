@@ -11,7 +11,7 @@ import (
 var DB *gorm.DB
 
 func Connect() {
-	
+
 	dbUser := os.Getenv("DATASOURCE_USERNAME")
 	dbPassword := os.Getenv("DATASOURCE_PASSWORD")
 	dbHost := os.Getenv("DATASOURCE_URL")
