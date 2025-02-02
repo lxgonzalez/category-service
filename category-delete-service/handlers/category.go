@@ -1,43 +1,49 @@
-package main
+package handlers
 
 import (
+	"category-delete-service/database"
+	"category-delete-service/models"
 	"encoding/json"
-	"log"
+	"fmt"
+	"net/http"
+	"os"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 )
 
-func main() {
-	// Crea una sesión de AWS
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("us-east-1"), // Cambia a tu región
-	})
+func notifyBroker(categoryID string) {
+	brokerURL := os.Getenv("BROKER_URL")
+
+	conn, _, err := websocket.DefaultDialer.Dial(brokerURL, nil)
 	if err != nil {
-		log.Fatal("Error al crear la sesión de AWS:", err)
+		fmt.Println("Error connecting to broker:", err)
+		return
+	}
+	defer conn.Close()
+
+	message := fmt.Sprintf(`{"event": "delete_category", "category_id": "%s"}`, categoryID)
+	fmt.Println("Sending message to broker:", message)
+	conn.WriteMessage(websocket.TextMessage, []byte(message))
+}
+
+func DeleteCategory(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["idCategory"]
+
+	var category models.Category
+	if err := database.DB.First(&category, id).Error; err != nil {
+		http.Error(w, "Category not found", http.StatusNotFound)
+		return
 	}
 
-	// Crea un cliente de SNS
-	svc := sns.New(sess)
-
-	// Define el mensaje
-	message := map[string]string{
-		"categoriaId": "123", // Cambia por el ID de la categoría
-	}
-	messageBytes, err := json.Marshal(message)
-	if err != nil {
-		log.Fatal("Error al serializar el mensaje:", err)
+	if err := database.DB.Delete(&category).Error; err != nil {
+		http.Error(w, "Failed to delete category", http.StatusInternalServerError)
+		return
 	}
 
-	// Publica el mensaje en el Topic de SNS
-	result, err := svc.Publish(&sns.PublishInput{
-		Message:  aws.String(string(messageBytes)),
-		TopicArn: aws.String("arn:aws:sns:us-east-1:498431141888:categoryDelete"), // Cambia por tu ARN
-	})
-	if err != nil {
-		log.Fatal("Error al publicar en SNS:", err)
-	}
+	notifyBroker(id)
 
-	log.Println("Mensaje publicado en SNS:", *result.MessageId)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(category)
 }
