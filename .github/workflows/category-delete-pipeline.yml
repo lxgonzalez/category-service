@@ -51,5 +51,6 @@ jobs:
                        -e DATABASE=${{secrets.DATABASE}} \
                        -e DATASOURCE_USERNAME=${{secrets.DATASOURCE_USERNAME}} \
                        -e DATASOURCE_PASSWORD=${{secrets.DATASOURCE_PASSWORD}} \
+                       -e BROKER_URL=${{secrets.BROKER_URL}} \
                        -d --name ${{secrets.DOCKER_IMAGE_DELETE}} \
                        -p 8080:8080 ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE_DELETE}}:latest
