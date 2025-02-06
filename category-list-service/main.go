@@ -5,7 +5,7 @@ import (
     "category-list-service/database"
     "category-list-service/handlers"
     "category-list-service/models"
-
+    "fmt"
     "github.com/gorilla/mux"
 )
 
@@ -17,6 +17,13 @@ func main() {
 
     r.HandleFunc("/categories", handlers.GetCategories).Methods("GET")
     r.HandleFunc("/categories/{idCategory}", handlers.GetOneCategory).Methods("GET")
+	r.HandleFunc("/", HealthCheckHandler).Methods("GET")
 
-    http.ListenAndServe(":8080", r)
+    http.ListenAndServe(":1030", r)
+}
+
+
+func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintln(w, "Category List Microservice is up and running ...")
 }
