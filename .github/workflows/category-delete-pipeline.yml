@@ -46,11 +46,11 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/${{secrets.DOCKER_IMAGE_DELETE}}:latest
             docker stop ${{secrets.DOCKER_IMAGE_DELETE}}|| true
             docker rm ${{secrets.DOCKER_IMAGE_DELETE}} || true
-            docker run -e DATASOURCE_URL=${{secrets.DATASOURCE_URL}} \
+            docker run --restart always -e DATASOURCE_URL=${{secrets.DATASOURCE_URL}} \
                        -e DATASOURCE_PORT=${{secrets.DATASOURCE_PORT}} \
                        -e DATABASE=${{secrets.DATABASE}} \
                        -e DATASOURCE_USERNAME=${{secrets.DATASOURCE_USERNAME}} \
                        -e DATASOURCE_PASSWORD=${{secrets.DATASOURCE_PASSWORD}} \
                        -e BROKER_URL=${{secrets.BROKER_URL}} \
                        -d --name ${{secrets.DOCKER_IMAGE_DELETE}} \
-                       -p 8080:8080 ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE_DELETE}}:latest
+                       -p 1029:1029 ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE_DELETE}}:latest
