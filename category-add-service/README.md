@@ -75,7 +75,7 @@ To create a new category, send a POST request with JSON data to the following en
 ---
 
 ## 📽️ Evidence
-
+![image](https://github.com/user-attachments/assets/cdd450d6-27fe-41ea-b5bd-df3aec0f795b)
 
 
 
