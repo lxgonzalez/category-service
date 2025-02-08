@@ -67,8 +67,10 @@ Follow these steps to run the API on your local machine:
     ```bash
     curl --location --request GET 'http://localhost:8080/categories/{idCategory}'
      ```
-   
-   
+
+   ---
+   ## 📽️ Evidence
+   ![image](https://github.com/user-attachments/assets/2d2b4587-0499-4316-ad38-f94120f246e7)
 
     
    
