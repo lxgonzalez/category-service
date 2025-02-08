@@ -85,5 +85,7 @@ Follow these steps to run the API on your local machine:
 
    ---
    ## 📽️ Evidence
+   ![image](https://github.com/user-attachments/assets/42c081dc-16f0-4961-a42e-c582cd62555a)
+
 
    
