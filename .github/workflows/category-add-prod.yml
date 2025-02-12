@@ -1,0 +1,56 @@
+name: Pipeline for Category Add Microservice
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'category-add-service/**'
+      - '.github/workflows/category-add-pipeline.yml'
+  pull_request:
+    branches: 
+      - main
+    paths:
+      - 'category-add-service/**'
+      - '.github/workflows/category-add-pipeline.yml'
+
+jobs:
+  build-and-push-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/${{secrets.DOCKER_IMAGE_ADD}}:latest ./category-add-service
+
+      - name: Push Docker image to Dockerhub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/${{secrets.DOCKER_IMAGE_ADD}}:latest
+
+  deploy-to-ec2-instance:
+    needs: build-and-push-docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST_MAIN }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            echo "Pull, stop, and redeploy the Docker container"
+            docker pull ${{ secrets.DOCKER_USERNAME }}/${{secrets.DOCKER_IMAGE_ADD}}:latest
+            docker stop ${{secrets.DOCKER_IMAGE_ADD}} || true
+            docker rm ${{secrets.DOCKER_IMAGE_ADD}} || true
+            docker run --restart always -e DATASOURCE_URL=${{secrets.DATASOURCE_URL}} \
+                       -e DATASOURCE_PORT=${{secrets.DATASOURCE_PORT}} \
+                       -e DATABASE=${{secrets.DATABASE}} \
+                       -e DATASOURCE_USERNAME=${{secrets.DATASOURCE_USERNAME}} \
+                       -e DATASOURCE_PASSWORD=${{secrets.DATASOURCE_PASSWORD}} \
+                       -d --name ${{secrets.DOCKER_IMAGE_ADD}} \
+                       -p 1028:1028 ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE_ADD}}:latest
